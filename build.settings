@@ -1,0 +1,35 @@
+settings = 
+{
+	
+        iphone =
+        {
+                plist =
+                {
+                        UIAppFonts = 
+                        {
+                                "Pixelated.ttf"
+                        }
+                },
+        },
+	android =
+        {
+			versionCode = "9",
+			installLocation="preferExternal"
+        },
+		usesPermissions =
+      {
+         "android.permission.ACCESS_COARSE_LOCATION",
+      },
+      usesFeatures =
+      {
+         {name="android.hardware.location", required=false},
+         {name="android.hardware.location.network", required=false},
+         {name="android.hardware.location.gps", required=false},
+      },
+	orientation =
+        {
+			default = "landscape"
+        },
+	
+}
+	
