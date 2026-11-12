@@ -102,6 +102,17 @@ export function playHeroAnimation(L, hero, pose, { carrying = L.gs.throwBrickisC
   hero.play();
 }
 
+/**
+ * Puts the hero in the outfit he should be wearing now, without changing what he is doing. The
+ * original only picked an outfit when the pose changed, so a power-up did not show until the hero
+ * next landed or a direction button was touched.
+ */
+export function refreshHeroOutfit(L, hero) {
+  const shown = hero.sequenceName;
+  const pose = shown.replace(/^red/, '').replace(/JetPack$/, '').replace(/Block$/, '');
+  playHeroAnimation(L, hero, pose, { carrying: /Block(JetPack)?$/.test(shown) });
+}
+
 /** The hero that is currently in play, or null while he is changing size. */
 export function currentHero(L) {
   if (L.gs.heroSize === 'small') return L.obj.smallHero;
@@ -169,7 +180,8 @@ export function spawnBigHero(L) {
   hero.jumpEndY = L.temp.heroJumpEndY;
   hero.jumpMaxY = 80;
   hero.runSpeed = 180;
-  hero.play();
+  // dressed for the power-up that made him grow (the original spawned him plain until he landed)
+  playHeroAnimation(L, hero, hero.state);
   gs.heroSize = 'big';
   L.obj.bigHero = hero;
   L.physics.start();

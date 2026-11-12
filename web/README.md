@@ -100,6 +100,14 @@ Deliberate differences:
   original contains the code for this but cleared the checkpoint on every level load before
   looking at it, so there the hero always went back to the start. "Restart" in the pause menu,
   leaving for the menu, and finishing the level forget the checkpoint.
+- **Every landing counts.** The original noticed a landing only at the moment a contact with the
+  ground began. A hop too short to leave a rising platform, a ceiling so low the hero never left
+  the floor, or a one-way platform turning solid again while he was still inside it had no such
+  moment, and left him standing in his jump pose, unable to jump, until the three-second safety
+  net or the next touch of a direction button. The port also looks once a frame: a hero who is
+  still "falling" but has stood on something for four frames has landed.
+- **Power-ups show at once.** The original chose the hero's outfit only when his pose changed, so
+  fire power or a jetpack did not show until he next landed or a direction button was touched.
 - **Keyboard**: releasing one direction while holding the other keeps the hero running (the
   original stopped him, which only made sense for touch buttons).
 - **Background**: one tile of each scrolling backdrop was missing in the original because of a

@@ -73,6 +73,18 @@ export class PhysicsBody {
     return [v.x * PIXELS_PER_METER, v.y * PIXELS_PER_METER];
   }
 
+  /** The objects this body is resting on or pressing against right now. Sensors do not count. */
+  touching() {
+    const objects = [];
+    for (let edge = this.b2.getContactList(); edge; edge = edge.next) {
+      const { contact } = edge;
+      if (!contact.isTouching() || contact.getFixtureA().isSensor() || contact.getFixtureB().isSensor()) continue;
+      const other = edge.other && edge.other.getUserData();
+      if (other && !other.destroyed && !other.object.removed) objects.push(other.object);
+    }
+    return objects;
+  }
+
   /** Moves the body to wherever the display object now is. */
   teleportToDisplay() {
     if (this.destroyed) return;
