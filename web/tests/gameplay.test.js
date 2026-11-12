@@ -384,6 +384,134 @@ test('the dragon lands with a thud', () => {
   assert.ok(played(game, 'throwblockthudsound'));
 });
 
+// --- landings the collision rules do not see ------------------------------------------------------
+//
+// A landing is noticed when the contact with the ground begins. These are the landings that have
+// no such moment; in the original they left the hero in his jump pose, unable to jump, until its
+// three-second safety net or the next touch of a direction button.
+
+const inJumpPose = (game) => /Jump/.test(game.hero.sequenceName);
+
+test('a short hop on a rising platform ends in a landing', () => {
+  for (const held of [1, 2, 3]) {
+    const game = startTestLevel({ ops: [call('spawnMoveUpPlatform', [300, 470, 130, 128], 'platform')], updates: ['platform'], heroX: 300, heroY: 300 });
+    settle(game);
+    game.run(20);
+    game.press('jump');
+    game.run(held);
+    game.release('jump');
+    game.run(30);
+    assert.equal(game.hero.sequenceName, 'heroFacingRight', `standing again after a ${held}-frame hop`);
+    assert.equal(game.hero.state2, 'ready', `and able to jump after a ${held}-frame hop`);
+  }
+});
+
+test('jumping up through a moving platform ends in a landing when he comes to rest on it', () => {
+  let landings = 0;
+  for (const [fn, args] of [
+    ['spawnMoveUpPlatform', [500, 430, 130, 128]],
+    ['spawnMoveDownPlatform', [500, 300, 130, 128]],
+  ]) {
+    for (let wait = 0; wait < 260; wait += 3) {
+      const game = startTestLevel({ ops: [call(fn, args, 'platform')], updates: ['platform'], heroX: 500 });
+      const platform = game.level.obj.platform;
+      settle(game);
+      game.run(wait);
+      game.press('jump');
+      game.run(wait % 2 ? 9 : 20);
+      game.release('jump');
+      game.run(100);
+      const hero = game.hero;
+      if (Math.abs(hero.y + 12 - platform.y) > 3) continue; // he did not end up on the platform
+      landings += 1;
+      assert.ok(!inJumpPose(game), `${fn}, jump after ${wait} frames: he stands on the platform in the ${hero.sequenceName} pose`);
+      assert.equal(hero.state2, 'ready', `${fn}, jump after ${wait} frames`);
+    }
+  }
+  assert.ok(landings > 20, `the sweep landed on the platform ${landings} times`);
+});
+
+test('bumping his head under a low ceiling ends in a landing', () => {
+  for (const gap of [1, 2, 3]) {
+    const game = startTestLevel({ ops: [brick(300, 480 - 24 - gap - 32, 'ground')] });
+    settle(game);
+    game.press('jump');
+    game.run(10);
+    game.release('jump');
+    game.run(30);
+    assert.equal(game.hero.sequenceName, 'heroFacingRight', `standing again under a ceiling ${gap}px above his head`);
+    assert.equal(game.hero.state2, 'ready');
+  }
+});
+
+test('an ordinary jump is not mistaken for a landing', () => {
+  const game = startTestLevel({});
+  settle(game);
+  const groundY = game.hero.y;
+  game.press('jump');
+  let airborne = 0;
+  for (let frame = 0; frame < 120; frame++) {
+    game.run(1);
+    if (frame === 12) game.release('jump');
+    if (game.hero.y < groundY - 3) {
+      airborne += 1;
+      assert.ok(inJumpPose(game), `jump pose in the air (frame ${frame})`);
+      assert.notEqual(game.hero.state2, 'ready', `cannot jump again in the air (frame ${frame})`);
+    }
+  }
+  assert.ok(airborne > 20, 'he really jumped');
+  assert.equal(game.hero.sequenceName, 'heroFacingRight', 'and landed');
+  assert.equal(game.hero.state2, 'ready');
+});
+
+// --- outfits ---------------------------------------------------------------------------------------
+
+test('the big hero changes outfit the moment he picks up a fire flower or a jetpack', () => {
+  let game = startTestLevel({});
+  settle(game);
+  growBig(game);
+  spawn.spawnFireFlowerPowerup(game.level, game.hero.x, game.hero.y - 20);
+  game.runUntil(() => game.gs.firepower === true, 240);
+  game.run(2);
+  assert.equal(game.hero.sequenceName, 'redheroFacingRight', 'red without touching the controls');
+
+  spawn.spawnJetpackPowerup(game.level, game.hero.x, game.hero.y - 20);
+  game.runUntil(() => game.gs.jetpack === true, 240);
+  game.run(2);
+  assert.equal(game.hero.sequenceName, 'redheroFacingRightJetPack', 'and wearing the jetpack');
+
+  // while running with the button held down, and in mid-jump, he keeps doing what he was doing
+  game = startTestLevel({});
+  settle(game);
+  growBig(game);
+  game.press('right');
+  game.run(20);
+  spawn.spawnFireFlowerPowerup(game.level, game.hero.x + 40, game.hero.y - 10);
+  game.runUntil(() => game.gs.firepower === true, 240);
+  game.run(2);
+  assert.equal(game.hero.sequenceName, 'redheroRunningRight', 'red while running');
+  game.release('right');
+  game.run(30);
+  game.press('jump');
+  game.run(8);
+  spawn.spawnJetpackPowerup(game.level, game.hero.x, game.hero.y - 4);
+  game.runUntil(() => game.gs.jetpack === true, 60);
+  game.run(1);
+  assert.equal(game.hero.sequenceName, 'redheroJumpRightJetPack', 'jetpack on in mid-jump');
+});
+
+test('the small hero who takes a fire flower in mid-air grows straight into the red outfit', () => {
+  const game = startTestLevel({});
+  settle(game);
+  game.press('jump');
+  game.run(12);
+  spawn.spawnFireFlowerPowerup(game.level, game.hero.x, game.hero.y - 4);
+  game.runUntil(() => game.gs.heroSize !== 'small', 60);
+  game.release('jump');
+  game.runUntil(() => game.gs.heroSize === 'big', 240);
+  assert.equal(game.hero.sequenceName, 'redheroFacingRight');
+});
+
 test('walkers turn around at walls and hop when they leave a jump sensor', () => {
   const wall = (x) => image('invisableground', 10, 100, x, 380, { name: 'wall', name2: 'wall', sensor: true, friction: 0, alpha: 0 });
   const sensor = image('invisableground', 40, 60, 560, 420, { name: 'jumpRightSensor', sensor: true, friction: 0, alpha: 0 });

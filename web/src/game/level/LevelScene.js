@@ -8,7 +8,7 @@
 import { Group, Image, Ref, Text } from '../../engine/display.js';
 import { After, State, forgetCheckPoint, musicForLevel, resetForLevel } from '../state.js';
 import { currentHero, isFacingRight, playHeroAnimation, spawnSmallHero } from './hero.js';
-import { onCollision, onPostCollision } from './collisions.js';
+import { noticeMissedLanding, onCollision, onPostCollision } from './collisions.js';
 import * as spawn from './spawn.js';
 
 const MUSIC_CHANNEL = 2;
@@ -343,6 +343,7 @@ export class LevelScene {
   _updateHero(hero) {
     const gs = this.gs;
     const game = this.groups.game;
+    noticeMissedLanding(this, hero);
     gs.heroX = hero.x;
     gs.heroY = hero.y;
 

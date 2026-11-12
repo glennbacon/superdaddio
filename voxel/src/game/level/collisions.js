@@ -14,7 +14,7 @@
 import { easing } from '../../engine/clock.js';
 import { State, nextLevelAfterBoss, nextLevelAfterDoor, unlockKey } from '../state.js';
 import { Text } from '../../engine/display.js';
-import { playHeroAnimation, spawnBigHero, spawnSmallHero } from './hero.js';
+import { playHeroAnimation, refreshHeroOutfit, spawnBigHero, spawnSmallHero } from './hero.js';
 import * as spawn from './spawn.js';
 
 const isGround = (o) => o.myName === 'ground' || o.myName2 === 'ground';
@@ -182,6 +182,44 @@ function growHero(L, hero, powerup, sound) {
     },
     1050,
   );
+}
+
+/** The landing rule's test for "the hero is on top of this": above its reference point and over its width. */
+const isOver = (hero, ground) => hero.y < ground.y && hero.x + 11 >= ground.x - ground.width * 0.5 && hero.x - 11 <= ground.x + ground.width * 0.5;
+
+/** The hero comes down on something he can stand on. */
+function land(L, ground, hero) {
+  if (!isGround(ground) || !isHero(hero) || !isOver(hero, ground)) return;
+  if (ground.y < hero.jumpStartY) {
+    // landed somewhere higher than the jump began: ease the camera up to it
+    L.clock.transitionTo(L.groups.game, { time: 350, y: -(hero.y - 330) });
+  }
+  if (hero.state2 === 'falling') {
+    playHeroAnimation(L, hero, hero.state);
+    const current = L.gs.heroSize === 'small' ? L.obj.smallHero : L.gs.heroSize === 'big' ? L.obj.bigHero : null;
+    if (current) current.checkForce = true;
+    hero.jumpStartY = hero.y;
+    hero.state2 = 'ready';
+  }
+}
+
+/** How many frames in a row the hero must stand on something, still "falling", for that to count as a landing. */
+const UNNOTICED_LANDING_FRAMES = 4;
+
+/**
+ * Catches the landings the collision rules never hear about. Called once a frame, after the step.
+ *
+ * `land` runs when a contact with the ground begins, but the hero can come to rest without one: a
+ * hop too short to leave a platform that is rising under him, a ceiling so low that he never
+ * leaves the floor, or a one-way platform that turns solid again while he is still inside it. The
+ * original then left him in his jump pose, unable to jump, until its three-second safety net.
+ */
+export function noticeMissedLanding(L, hero) {
+  const ground = hero.state2 === 'falling' && hero.body ? hero.body.touching().find((o) => isGround(o) && isOver(hero, o)) : undefined;
+  hero.framesAground = ground ? (hero.framesAground || 0) + 1 : 0;
+  if (hero.framesAground < UNNOTICED_LANDING_FRAMES) return;
+  hero.framesAground = 0;
+  land(L, ground, hero);
 }
 
 function unlock(L, level) {
@@ -393,22 +431,7 @@ const BEGAN_RULES = [
     playHeroAnimation(L, hero, hero.state, { carrying: true });
   },
 
-  // landing
-  (L, ground, hero) => {
-    if (!isGround(ground) || !isHero(hero) || !(hero.y < ground.y)) return;
-    if (!(hero.x + 11 >= ground.x - ground.width * 0.5 && hero.x - 11 <= ground.x + ground.width * 0.5)) return;
-    if (ground.y < hero.jumpStartY) {
-      // landed somewhere higher than the jump began: ease the camera up to it
-      L.clock.transitionTo(L.groups.game, { time: 350, y: -(hero.y - 330) });
-    }
-    if (hero.state2 === 'falling') {
-      playHeroAnimation(L, hero, hero.state);
-      const current = L.gs.heroSize === 'small' ? L.obj.smallHero : L.gs.heroSize === 'big' ? L.obj.bigHero : null;
-      if (current) current.checkForce = true;
-      hero.jumpStartY = hero.y;
-      hero.state2 = 'ready';
-    }
-  },
+  land,
 
   // bumping his head on the underside of something solid ends the jump
   (L, ground, hero) => {
@@ -507,6 +530,7 @@ const BEGAN_RULES = [
     L.audio.play('fireballpowerupsound');
     L.gs.throwFireBall = true;
     L.gs.firepower = true;
+    refreshHeroOutfit(L, hero);
     later(L, () => removeObject(L, flower));
     addScore(L, flower, 1000);
   },
@@ -523,6 +547,7 @@ const BEGAN_RULES = [
     later(L, () => removeObject(L, jetpack));
     addScore(L, jetpack, 2000);
     L.gs.jetpack = true;
+    refreshHeroOutfit(L, hero);
   },
   (L, jetpack, hero) => {
     if (jetpack.myName !== 'jetpackPowerup' || hero.myName !== 'smallHero') return;
