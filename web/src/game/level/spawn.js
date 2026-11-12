@@ -444,9 +444,12 @@ const HEX_24 = [0, -24, 24, 0, 24, 22, 0, 24, -24, 22, -24, 0];
 const HEX_45 = [0, -45, 45, 0, 45, 44, 0, 45, -45, 44, -45, 0];
 const scaled = (shape, factor) => shape.map((v) => v * factor);
 
-// Box2D leaves a body that rests on the ground with a vertical speed of zero. The original tested
-// "vy == 0" for that; a tiny tolerance keeps the test meaningful with double-precision physics.
-const isResting = (vy) => Math.abs(vy) < 1e-4;
+// "Standing on something", for the enemies that hop whenever they are. The original tested
+// "vy == 0": Box2D leaves a body that rests on the ground with a vertical speed of zero, and a tiny
+// tolerance keeps that test meaningful with double-precision physics. But an enemy pressed against
+// the underside of a block or a platform has no vertical speed either, and one that hops there
+// pushes itself up again every frame and never comes down — so something must be holding it up too.
+const isResting = (enemy) => Math.abs(enemy.vy) < 1e-4 && enemy.body !== null && enemy.body.isSupported();
 
 function newEnemy(L, x, y, { sheet: enemySheet, sequences, first, shape, material = ENEMY_MATERIAL, myName, myName2 = 'badguy' }) {
   const enemy = new Sprite(enemySheet, sequences);
@@ -643,7 +646,7 @@ export function spawnOrangeJumpyBadGuy(L, x, y) {
   enemy.update = () => {
     if (enemy.removed || enemy.isAlive !== true || !heroInRange(L, enemy)) return;
     [enemy.vx, enemy.vy] = enemy.getLinearVelocity();
-    if (enemy.state === 'bounce' && isResting(enemy.vy)) enemy.applyForce(0, -7, enemy.x, enemy.y);
+    if (enemy.state === 'bounce' && isResting(enemy)) enemy.applyForce(0, -7, enemy.x, enemy.y);
   };
   return enemy;
 }
@@ -668,7 +671,7 @@ export function spawnPurpleFlyBadGuy(L, x, y, beginX, beginY, endX, endY, mode) 
       enemy.applyForce(-0.1, 0, enemy.x, enemy.y);
     }
     if (enemy.mode === 'hop') {
-      if (isResting(enemy.vy)) enemy.applyForce(0, -5, enemy.x, enemy.y);
+      if (isResting(enemy)) enemy.applyForce(0, -5, enemy.x, enemy.y);
     } else if (enemy.y >= enemy.endY && enemy.vy > -1) {
       enemy.applyForce(0, -1, enemy.x, enemy.y);
     }

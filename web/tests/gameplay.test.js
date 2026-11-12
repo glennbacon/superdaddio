@@ -384,6 +384,73 @@ test('the dragon lands with a thud', () => {
   assert.ok(played(game, 'throwblockthudsound'));
 });
 
+// --- hopping enemies ---------------------------------------------------------------------------------
+//
+// The purple and the orange hoppers push off whenever they are "at rest". Pressed against the
+// underside of something they have no vertical speed either, and must not take that for standing.
+
+/** How far an object travels over `frames` frames: [x range, y range, highest point]. */
+function travel(game, object, frames) {
+  let [minX, maxX, minY, maxY] = [Infinity, -Infinity, Infinity, -Infinity];
+  for (let i = 0; i < frames; i++) {
+    game.run(1);
+    minX = Math.min(minX, object.x);
+    maxX = Math.max(maxX, object.x);
+    minY = Math.min(minY, object.y);
+    maxY = Math.max(maxY, object.y);
+  }
+  return [maxX - minX, maxY - minY, minY];
+}
+
+test('a purple hopper on open ground hops about 40px high, again and again', () => {
+  const game = startTestLevel({ ops: [call('spawnPurpleFlyBadGuy', [600, 460, 540, 460, 660, 460, 'hop'], 'purple')], updates: ['purple'] });
+  const purple = game.level.obj.purple;
+  game.run(60);
+  let hops = 0;
+  let rising = false;
+  let [lowest, highest] = [-Infinity, Infinity];
+  for (let i = 0; i < 600; i++) {
+    game.run(1);
+    lowest = Math.max(lowest, purple.y);
+    highest = Math.min(highest, purple.y);
+    const up = purple.getLinearVelocity()[1] < -50;
+    if (up && !rising) hops += 1;
+    rising = up;
+  }
+  near(lowest - highest, 40, 3, 'height of a hop');
+  assert.ok(hops >= 8, `hopped ${hops} times in ten seconds`);
+});
+
+test('a purple hopper that bumps its head on a block drops back down', () => {
+  // the underside of the block is some 20px above its head; a hop would carry it 40px
+  const game = startTestLevel({
+    ops: [brick(600, 480 - 24 - 20 - 32), call('spawnPurpleFlyBadGuy', [600, 460, 540, 460, 660, 460, 'hop'], 'purple')],
+    updates: ['purple'],
+  });
+  const purple = game.level.obj.purple;
+  game.run(120);
+  const [, dy] = travel(game, purple, 300);
+  assert.ok(dy > 10, `it keeps hopping up and down (moved ${dy.toFixed(1)}px vertically)`);
+  assert.ok(Math.abs(purple.x - 600) > 20, `and is not held in place under the block (it is at x = ${purple.x.toFixed(0)})`);
+});
+
+test('a purple hopper does not ride along under a rising platform', () => {
+  // the platform starts just above its head, rises 130px and comes back
+  const game = startTestLevel({
+    ops: [call('spawnMoveUpPlatform', [600, 440, 130, 128], 'platform'), call('spawnPurpleFlyBadGuy', [600, 460, 570, 460, 630, 460, 'hop'], 'purple')],
+    updates: ['platform', 'purple'],
+  });
+  const [, , highest] = travel(game, game.level.obj.purple, 600);
+  assert.ok(highest > 400, `it stays near the ground (it got as high as y = ${highest.toFixed(0)})`);
+});
+
+test('an orange hopper that bumps its head on a block drops back down', () => {
+  const game = startTestLevel({ ops: [brick(600, 480 - 24 - 20 - 32), call('spawnOrangeJumpyBadGuy', [600, 460], 'orange')], updates: ['orange'] });
+  game.run(120);
+  const [, dy] = travel(game, game.level.obj.orange, 300);
+  assert.ok(dy > 10, `it keeps hopping up and down under the block (moved ${dy.toFixed(1)}px vertically)`);
+});
+
 // --- landings the collision rules do not see ------------------------------------------------------
 //
 // A landing is noticed when the contact with the ground begins. These are the landings that have

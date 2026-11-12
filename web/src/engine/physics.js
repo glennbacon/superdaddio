@@ -73,16 +73,34 @@ export class PhysicsBody {
     return [v.x * PIXELS_PER_METER, v.y * PIXELS_PER_METER];
   }
 
-  /** The objects this body is resting on or pressing against right now. Sensors do not count. */
-  touching() {
-    const objects = [];
+  /** The contacts in which this body is touching something solid right now. Sensors do not count. */
+  *_solidContacts() {
     for (let edge = this.b2.getContactList(); edge; edge = edge.next) {
       const { contact } = edge;
-      if (!contact.isTouching() || contact.getFixtureA().isSensor() || contact.getFixtureB().isSensor()) continue;
+      if (contact.isTouching() && !contact.getFixtureA().isSensor() && !contact.getFixtureB().isSensor()) yield edge;
+    }
+  }
+
+  /** The objects this body is resting on or pressing against right now. */
+  touching() {
+    const objects = [];
+    for (const edge of this._solidContacts()) {
       const other = edge.other && edge.other.getUserData();
       if (other && !other.destroyed && !other.object.removed) objects.push(other.object);
     }
     return objects;
+  }
+
+  /** Whether something is holding this body up: it is touching something solid that pushes it upwards. */
+  isSupported() {
+    for (const { contact } of this._solidContacts()) {
+      const manifold = contact.getWorldManifold(null);
+      if (!manifold) continue;
+      // the normal points from fixture A to fixture B, and y points down
+      const push = contact.getFixtureB().getBody() === this.b2 ? manifold.normal.y : -manifold.normal.y;
+      if (push < -0.5) return true;
+    }
+    return false;
   }
 
   /** Moves the body to wherever the display object now is. */
