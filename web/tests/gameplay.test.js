@@ -361,6 +361,29 @@ test('a loose block is picked up on touch, carried, and thrown by releasing acti
   assert.ok(block.removed, 'and broke');
 });
 
+test('a loose block lands without a sound: the original has that thud commented out', () => {
+  const game = startTestLevel({ ops: [call('spawnThrowBrick', [380, 460], 'block')], updates: ['block'] });
+  settle(game);
+  game.run(60);
+  assert.ok(!played(game, 'throwblockthudsound'), 'silent while it settles at the start of the level');
+
+  game.press('right');
+  game.runUntil(() => game.gs.throwBrickisCarry, 120);
+  game.release('right');
+  game.run(45);
+  game.press('action');
+  game.release('action');
+  game.run(150); // thrown, tumbled and come to rest
+  assert.equal(game.gs.throwBrickisCarry, false, 'thrown');
+  assert.ok(!played(game, 'throwblockthudsound'), 'silent when it lands after being thrown');
+});
+
+test('the dragon lands with a thud', () => {
+  const game = startTestLevel({ ops: [call('spawnDragon', [700, 0, 'walkLeft'], 'dragon1')], updates: ['dragon1'], level: 'level2_7', worldlevel: '2-7' });
+  game.runUntil(() => played(game, 'throwblockthudsound'), 240);
+  assert.ok(played(game, 'throwblockthudsound'));
+});
+
 test('walkers turn around at walls and hop when they leave a jump sensor', () => {
   const wall = (x) => image('invisableground', 10, 100, x, 380, { name: 'wall', name2: 'wall', sensor: true, friction: 0, alpha: 0 });
   const sensor = image('invisableground', 40, 60, 560, 420, { name: 'jumpRightSensor', sensor: true, friction: 0, alpha: 0 });

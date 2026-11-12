@@ -379,9 +379,8 @@ const BEGAN_RULES = [
     L.gs.state = State.WIN;
   },
 
-  (L, brick, ground) => {
-    if (brick.myName === 'throwbrick' && isGround(ground)) L.audio.play('throwblockthudsound');
-  },
+  // Only the dragon thuds. The original has the same rule for a loose block, but commented out: a
+  // block touches the ground (and other blocks) many times as it settles or tumbles.
   (L, dragon, ground) => {
     if (dragon.myName === 'dragon' && isGround(ground)) L.audio.play('throwblockthudsound');
   },
