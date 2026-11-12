@@ -12,6 +12,10 @@ terms below instead.
 - every `.wav` and `.mp3` file
 - the copies of those files used by the web port: `web/src/assets/images/`,
   `web/src/assets/images2/`, `web/src/assets/audio/` and `web/public/favicon.png`
+- the copies used by the voxel remake: `voxel/src/assets/images/`, `voxel/src/assets/images2/`,
+  `voxel/src/assets/audio/` and `voxel/public/favicon.png`. Its world-select thumbnails
+  (`world1screenshot.png` to `world7screenshot.png`) and `voxel/screenshot.png` are new
+  screenshots of that artwork and count as assets too.
 
 ## What you may do
 
