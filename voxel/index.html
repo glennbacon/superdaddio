@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Super Daddio 3D</title>
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #000;
+        overflow: hidden;
+      }
+      #stage {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #game {
+        display: block;
+        outline: none;
+      }
+      #rotate {
+        display: none;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 12%;
+        text-align: center;
+        color: #9a9a9a;
+        font: 14px system-ui, sans-serif;
+        pointer-events: none;
+      }
+      @media (orientation: portrait) and (max-width: 700px) {
+        #rotate {
+          display: block;
+        }
+      }
+      #status {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font: 16px system-ui, sans-serif;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"><canvas id="game" width="800" height="480"></canvas></div>
+    <div id="rotate">Turn your phone sideways for a bigger picture</div>
+    <div id="status">Loading…</div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

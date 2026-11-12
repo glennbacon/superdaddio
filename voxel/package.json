@@ -1,0 +1,25 @@
+{
+  "name": "superdaddio-voxel",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Super Daddio 3D \u2014 the 2012 platformer remade as a voxel diorama (Three.js + planck.js)",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "pack": "node tools/pack-assets.mjs",
+    "predev": "node tools/pack-assets.mjs",
+    "dev": "vite",
+    "prebuild": "node tools/pack-assets.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test",
+    "extract-levels": "lua5.1 tools/extract/extract.lua ../thelevel.lua src/levels"
+  },
+  "dependencies": {
+    "planck": "^1.4.2",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}
