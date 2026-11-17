@@ -7,6 +7,9 @@ depth, seen through a perspective camera, lit by a sun that casts shadows.
 
 It runs in a web browser, on phones and desktops. All 60 levels are included.
 
+**[Play it in your browser](https://glennbacon.github.io/arcade/super-daddio-voxel/)** — it is one of
+the games in [Glenn Bacon's arcade](https://glennbacon.github.io/arcade/).
+
 ![The title screen, world 1-1, the dragon of world 2 and a rainy world 4-1](screenshot.png)
 
 This folder is a sibling of [`web/`](../web/), the faithful 2D port, and is built on it: the hero,

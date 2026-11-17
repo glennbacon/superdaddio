@@ -12,9 +12,22 @@ This repository holds three versions of the game:
 - **A voxel remake** (2026) built on that port: the same levels, physics, sound effects and music,
   drawn in 3D. Every sprite is a voxel model made from the original pixel art.
 
+**Play them in your browser:** [Super Daddio](https://glennbacon.github.io/arcade/super-daddio/)
+(the port) and [Super Daddio 3D](https://glennbacon.github.io/arcade/super-daddio-voxel/) (the voxel
+remake). Both are in [Glenn Bacon's arcade](https://glennbacon.github.io/arcade/).
+
+The port:
+
+![The port: the title screen, world 1-1, the dragon of world 2 and a rainy world 4-1](web/screenshot.png)
+
+The voxel remake, in the same four places:
+
+![The voxel remake: the title screen, world 1-1, the dragon of world 2 and a rainy world 4-1](voxel/screenshot.png)
+
 ## Play the port
 
-You need [Node.js](https://nodejs.org/) 22 or newer.
+Play it online at <https://glennbacon.github.io/arcade/super-daddio/>, or run it from this
+repository. You need [Node.js](https://nodejs.org/) 22 or newer.
 
 ```sh
 cd web
@@ -27,6 +40,9 @@ too. [`web/README.md`](web/README.md) has the full controls, how the port is org
 checked against the original, and where it deliberately differs.
 
 ## Play the voxel remake
+
+Play it online at <https://glennbacon.github.io/arcade/super-daddio-voxel/>, or run it from this
+repository:
 
 ```sh
 cd voxel

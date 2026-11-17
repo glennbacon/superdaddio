@@ -6,6 +6,12 @@ Corona used, so forces, masses and collisions behave as they did in the original
 
 All 60 levels (worlds 1–8 with seven stages each, world 9 with four) are included.
 
+**[Play it in your browser](https://glennbacon.github.io/arcade/super-daddio/)** — it is one of the
+games in [Glenn Bacon's arcade](https://glennbacon.github.io/arcade/), next to
+[the voxel remake](../voxel/).
+
+![The title screen, world 1-1, the dragon of world 2 and a rainy world 4-1](screenshot.png)
+
 ## Run it
 
 ```sh

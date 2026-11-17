@@ -11,7 +11,8 @@ terms below instead.
 - everything in `images/` and `images2/`, and the `Icon*.png` files
 - every `.wav` and `.mp3` file
 - the copies of those files used by the web port: `web/src/assets/images/`,
-  `web/src/assets/images2/`, `web/src/assets/audio/` and `web/public/favicon.png`
+  `web/src/assets/images2/`, `web/src/assets/audio/` and `web/public/favicon.png`.
+  `web/screenshot.png` is a set of screenshots of that artwork and counts as an asset too.
 - the copies used by the voxel remake: `voxel/src/assets/images/`, `voxel/src/assets/images2/`,
   `voxel/src/assets/audio/` and `voxel/public/favicon.png`. Its world-select thumbnails
   (`world1screenshot.png` to `world7screenshot.png`) and `voxel/screenshot.png` are new
